@@ -1,0 +1,8 @@
+hopsworks
+joblib
+scikit-learn
+seaborn
+sklearn
+dataframe-image
+modal-client
+gradio
