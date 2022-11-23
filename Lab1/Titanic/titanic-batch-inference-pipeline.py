@@ -3,10 +3,10 @@ import modal
     
 LOCAL=True
 
-if LOCAL == False:
+if LOCAL == True:
    stub = modal.Stub()
-   hopsworks_image = modal.Image.debian_slim().pip_install(["hopsworks","joblib","seaborn","sklearn","dataframe-image"])
-   @stub.function(image=hopsworks_image, schedule=modal.Period(days=1), secret=modal.Secret.from_name("jim-hopsworks-ai"))
+   hopsworks_image = modal.Image.debian_slim().pip_install(["hopsworks==3.0.4","joblib","seaborn","sklearn","dataframe-image"])
+   @stub.function(image=hopsworks_image, schedule=modal.Period(days=1), secret=modal.Secret.from_name("abyel-hopsworks-secret"))
    def f():
        g()
 
@@ -27,15 +27,16 @@ def g():
     fs = project.get_feature_store()
     
     mr = project.get_model_registry()
-    model = mr.get_model("iris_modal", version=1)
+    model = mr.get_model("titanic_modal", version=1)
     model_dir = model.download()
-    model = joblib.load(model_dir + "/iris_model.pkl")
+    model = joblib.load(model_dir + "/titanic_model.pkl")
     
-    feature_view = fs.get_feature_view(name="iris_modal", version=1)
+    feature_view = fs.get_feature_view(name="titanic_modal", version=1)
     batch_data = feature_view.get_batch_data()
     
     y_pred = model.predict(batch_data)
     # print(y_pred)
+    ## CONTINUE HERE!
     flower = y_pred[y_pred.size-1]
     flower_url = "https://raw.githubusercontent.com/featurestoreorg/serverless-ml-course/main/src/01-module/assets/" + flower + ".png"
     print("Flower predicted: " + flower)

@@ -10,7 +10,9 @@ The purpose with this lab is to learn how to setup a serverless ML system with e
 - Feature Store: Hopsworks
 - Feature & training pipeline: Modal
 - Inference pipeline: Hugging Face Spaces 
+
 ## Architecture
+
 ## Task 1 
 ## Task 2
 
