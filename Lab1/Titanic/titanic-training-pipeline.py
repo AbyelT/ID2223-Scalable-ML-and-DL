@@ -36,7 +36,7 @@ def g():
         feature_view = fs.get_feature_view(name="titanic_modal", version=1)
     except:
         titanic_fg = fs.get_feature_group(name="titanic_modal", version=1)
-        query = titanic_fg.select_except("passengerId")
+        query = titanic_fg.select_except(["passengerid"])
         feature_view = fs.create_feature_view(name="titanic_modal",
                                           version=1,
                                           description="Read from Titanic dataset",

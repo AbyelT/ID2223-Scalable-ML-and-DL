@@ -1,11 +1,11 @@
 import os
 import modal
     
-LOCAL=True
+LOCAL=False
 
-if LOCAL == True:
+if LOCAL == False:
    stub = modal.Stub()
-   hopsworks_image = modal.Image.debian_slim().pip_install(["hopsworks==3.0.4","joblib","seaborn","sklearn","dataframe-image"])
+   hopsworks_image = modal.Image.debian_slim().pip_install(["hopsworks==3.0.4","joblib","seaborn","scikit-learn","dataframe-image"])
    @stub.function(image=hopsworks_image, schedule=modal.Period(days=1), secret=modal.Secret.from_name("abyel-hopsworks-secret"))
    def f():
        g()
@@ -53,7 +53,7 @@ def g():
     # print(df["variety"])
     label = str(df.iloc[-1]["survived"])
     label_url = "https://raw.githubusercontent.com/AbyelT/ID2223-Scalable-ML-and-DL/main/Lab1/Titanic/assets/" + label + ".png"
-    print("Actual survival: " + label)
+    print("Actually survived: " + label)
     img = Image.open(requests.get(label_url, stream=True).raw)            
     img.save("./actual_passenger.png")
     dataset_api.upload("./actual_passenger.png", "Resources/images", overwrite=True)

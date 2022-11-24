@@ -4,8 +4,6 @@ import modal
 BACKFILL=False
 LOCAL=False
 
-# DAILY
-
 if LOCAL == False:
    stub = modal.Stub()
    image = modal.Image.debian_slim().pip_install(["hopsworks==3.0.4","joblib","seaborn","sklearn","dataframe-image"]) 
@@ -23,17 +21,15 @@ def generate_passenger(survived, passenger_id):
     import random
 
     random_pclass = random.randint(1, 3)
-    random_age = random.randint(1, 100)
     random_sex = random.randint(0, 1)
-    random_sibsp = random.randint(1, 3)
-    random_parch = random.randint(0, 2)
+    random_age = random.randint(0, 5) # [0,1,2,3,4,5]
+    random_embarked = random.randint(0, 2)
 
     passenger_df = pd.DataFrame({ "passengerid": [passenger_id],
-                                "age": [random_age],
-                                "sex": [random_sex],
                                 "pclass": [random_pclass],
-                                "sibsp": [random_sibsp],
-                                "parch": [random_parch],
+                                "sex": [random_sex],
+                                "age": [random_age],
+                                "embarked": [random_embarked],
                       })
     passenger_df['survived'] = survived
     
@@ -42,7 +38,7 @@ def generate_passenger(survived, passenger_id):
 
 def get_random_titanic_passenger(passenger_id):
     """
-    Returns a DataFrame containing one random titanpic passenger
+    Returns a DataFrame containing one random titanic passenger
     """
     import pandas as pd
     import random

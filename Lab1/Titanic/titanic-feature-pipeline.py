@@ -49,12 +49,12 @@ def g():
     # print(titanic_df.head(10))
 
     # Upload dataset as a feature group in Hopsworks feature store
-    iris_fg = fs.get_or_create_feature_group(
+    titanic_fg = fs.get_or_create_feature_group(
         name="titanic_modal",
         version=1,
-        primary_key=["PassengerId"], 
+        primary_key=["PassengerId", "Age", "Sex", "Pclass", "Embarked"], 
         description="Titanic dataset")
-    iris_fg.insert(titanic_df, write_options={"wait_for_job" : False})
+    titanic_fg.insert(titanic_df, write_options={"wait_for_job" : False})
 
 if __name__ == "__main__":
     if LOCAL == True :
