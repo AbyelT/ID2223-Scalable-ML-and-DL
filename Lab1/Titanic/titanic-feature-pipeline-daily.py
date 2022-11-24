@@ -35,7 +35,7 @@ def generate_passenger(survived, passenger_id):
                                 "sibsp": [random_sibsp],
                                 "parch": [random_parch],
                       })
-    passenger_df['survived'] = 0  
+    passenger_df['survived'] = survived
     
     return passenger_df
 

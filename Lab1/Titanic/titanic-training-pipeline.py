@@ -40,11 +40,12 @@ def g():
         feature_view = fs.create_feature_view(name="titanic_modal",
                                           version=1,
                                           description="Read from Titanic dataset",
-                                          labels=["Survived"],
+                                          labels=["survived"],
                                           query=query)    
 
     # You can read training data, randomly split into train/test sets of features (X) and labels (y)        
     X_train, X_test, y_train, y_test = feature_view.train_test_split(0.2)
+    print(X_train, y_train)
 
     # Train our model with the Scikit-learn K-nearest-neighbors algorithm using our features (X_train) and labels (y_train)
     # model = KNeighborsClassifier(n_neighbors=2)

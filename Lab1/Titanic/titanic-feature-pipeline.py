@@ -24,7 +24,7 @@ def g():
     titanic_df = pd.read_csv("https://raw.githubusercontent.com/ID2223KTH/id2223kth.github.io/master/assignments/lab1/titanic.csv")
 
     # Drop features without little or no predictive power
-    titanic_df.drop(["Name", "Ticket", "Fare", "Cabin", "Embarked"], axis=1, inplace=True)
+    titanic_df.drop(["Name", "Ticket", "Fare", "Cabin", "SibSp", "Parch"], axis=1, inplace=True)
 
     # Data preparation steps 
 
@@ -34,15 +34,19 @@ def g():
     
     ## Binning of age
     bins = [0, 15, 30, 45, 60, 75, 90]
-    labels = [1,2,3,4,5,6] # ['kid', 'young', 'adult', 'senior', 'old', 'superold']
-    titanic_df['Age'] = pd.cut(titanic_df['Age'], bins=bins, labels=labels, include_lowest=True)
+    #labels = [0,1,2,3,4,5] # ['kid', 'young', 'adult', 'senior', 'old', 'superold']
+    titanic_df['Age'] = pd.cut(titanic_df['Age'], bins=bins, labels=False, include_lowest=True)
     titanic_df['Age'] = titanic_df['Age'].astype('int64') #.map( {'male': 0, 'female': 1} )
 
     ## Cast datatype of a column into string
     titanic_df['Sex'] = titanic_df['Sex'].map( {'male': 0, 'female': 1} )
-    
-    print(titanic_df.info())
-    print(titanic_df.head(10))
+
+    ## convert category to numbers
+    titanic_df['Embarked'] = titanic_df['Embarked'].fillna(titanic_df['Embarked'].mode()[0])
+    titanic_df['Embarked'].replace(['S', 'C', 'Q'], [0, 1, 2], inplace=True)
+
+    # print(titanic_df.isna().sum())
+    # print(titanic_df.head(10))
 
     # Upload dataset as a feature group in Hopsworks feature store
     iris_fg = fs.get_or_create_feature_group(
