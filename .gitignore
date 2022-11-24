@@ -7,6 +7,10 @@ Lab1/Iris/confusion_matrix.png
 Lab1/Iris/df_recent.png
 Lab1/Iris/latest_iris.png
 Lab1/Titanic/.hw_api_key
+Lab1/Titanic/actual_passenger.png
+Lab1/Titanic/confusion_matrix.png
+Lab1/Titanic/df_recent.png
+Lab1/Titanic/latest_passenger.png
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

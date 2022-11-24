@@ -8,55 +8,56 @@ LOCAL=False
 
 if LOCAL == False:
    stub = modal.Stub()
-   image = modal.Image.debian_slim().pip_install(["hopsworks","joblib","seaborn","sklearn","dataframe-image"]) 
+   image = modal.Image.debian_slim().pip_install(["hopsworks==3.0.4","joblib","seaborn","sklearn","dataframe-image"]) 
 
-   @stub.function(image=image, schedule=modal.Period(days=1), secret=modal.Secret.from_name("HOPSWORKS_API_KEY"))
+   @stub.function(image=image, schedule=modal.Period(days=1), secret=modal.Secret.from_name("abyel-hopsworks-secret"))
    def f():
        g()
 
 
-# def generate_flower(name, sepal_len_max, sepal_len_min, sepal_width_max, sepal_width_min, 
-#                     petal_len_max, petal_len_min, petal_width_max, petal_width_min):
-#     """
-#     Returns a single iris flower as a single row in a DataFrame
-#     """
-#     import pandas as pd
-#     import random
+def generate_passenger(survived, passenger_id):
+    """
+    Returns a single iris flower as a single row in a DataFrame
+    """
+    import pandas as pd
+    import random
 
-#     df = pd.DataFrame({ "sepal_length": [random.uniform(sepal_len_max, sepal_len_min)],
-#                        "sepal_width": [random.uniform(sepal_width_max, sepal_width_min)],
-#                        "petal_length": [random.uniform(petal_len_max, petal_len_min)],
-#                        "petal_width": [random.uniform(petal_width_max, petal_width_min)]
-#                       })
-#     df['variety'] = name
-#     return df
+    random_pclass = random.randint(1, 3)
+    random_age = random.randint(1, 100)
+    random_sex = random.randint(0, 1)
+    random_sibsp = random.randint(1, 3)
+    random_parch = random.randint(0, 2)
+
+    passenger_df = pd.DataFrame({ "passengerid": [passenger_id],
+                                "age": [random_age],
+                                "sex": [random_sex],
+                                "pclass": [random_pclass],
+                                "sibsp": [random_sibsp],
+                                "parch": [random_parch],
+                      })
+    passenger_df['survived'] = 0  
+    
+    return passenger_df
 
 
-# def get_random_iris_flower():
-#     """
-#     Returns a DataFrame containing one random iris flower
-#     """
-#     import pandas as pd
-#     import random
+def get_random_titanic_passenger(passenger_id):
+    """
+    Returns a DataFrame containing one random titanpic passenger
+    """
+    import pandas as pd
+    import random
 
-#     virginica_df = generate_flower("Virginica", 8, 5.5, 3.8, 2.2, 7, 4.5, 2.5, 1.4)
-#     versicolor_df = generate_flower("Versicolor", 7.5, 4.5, 3.5, 2.1, 3.1, 5.5, 1.8, 1.0)
-#     setosa_df =  generate_flower("Setosa", 6, 4.5, 4.5, 2.3, 1.2, 2, 0.7, 0.3)
+    # randomly pick one of these 2 and write it to the featurestore
+    coin_flip = random.randint(0, 1)
 
-#     # randomly pick one of these 3 and write it to the featurestore
-#     pick_random = random.uniform(0,3)
-#     if pick_random >= 2:
-#         iris_df = virginica_df
-#         print("Virginica added")
-#     elif pick_random >= 1:
-#         iris_df = versicolor_df
-#         print("Versicolor added")
-#     else:
-#         iris_df = setosa_df
-#         print("Setosa added")
+    if coin_flip >= 1:
+        passenger_df = generate_passenger(1, passenger_id)
+        print("This passenger Survived!")
+    else:
+        passenger_df = generate_passenger(0, passenger_id)
+        print("This passenger Perished...")
 
-#     return iris_df
-
+    return passenger_df
 
 
 def g():
@@ -66,19 +67,26 @@ def g():
     project = hopsworks.login()
     fs = project.get_feature_store()
 
-    if BACKFILL == True:
-        titanic_df = pd.read_csv("https://raw.githubusercontent.com/ID2223KTH/id2223kth.github.io/master/assignments/lab1/titanic.csv")
-    else:
-        titanic_df = pd.read_csv("./../titanic.csv") # get_random_iris_flower()
+    titanic_fg = fs.get_feature_group(name="titanic_modal", version=1)    
 
-    print(titanic_df.head(5))
+    # if BACKFILL == True:
+    #     titanic_df = pd.read_csv("https://raw.githubusercontent.com/ID2223KTH/id2223kth.github.io/master/assignments/lab1/titanic.csv")
+    # else:
+    #     titanic_df = pd.read_csv("./../titanic.csv") # get_random_iris_flower()
+
+    titanic_df = titanic_fg.read()
+    passenger_id = titanic_df['passengerid'].max() + 1
+    passenger_df = get_random_titanic_passenger(passenger_id)
+
+    print(passenger_df.head(5))
     
-    # titanic_df = fs.get_or_create_feature_group(
-    #     name="iris_modal",
+    # titanic_df = titanic_fs.get_or_create_feature_group(
+    #     name="titanic_modal",
     #     version=1,
-    #     primary_key=["sepal_length","sepal_width","petal_length","petal_width"], 
-    #     description="Iris flower dataset")
-    # iris_fg.insert(iris_df, write_options={"wait_for_job" : False})
+    #     primary_key=["passengerid"], 
+    #     description="Titanic passenger dataset")
+    
+    titanic_fg.insert(passenger_df, write_options={"wait_for_job" : False})
 
 if __name__ == "__main__":
     if LOCAL == True :

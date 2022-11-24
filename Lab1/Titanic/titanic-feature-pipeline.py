@@ -33,7 +33,7 @@ def g():
     titanic_df['Age'].fillna(mean_age, inplace=True)
     
     ## Binning of age
-    bins = [ 0, 15, 30, 45, 60, 75, 90]
+    bins = [0, 15, 30, 45, 60, 75, 90]
     labels = [1,2,3,4,5,6] # ['kid', 'young', 'adult', 'senior', 'old', 'superold']
     titanic_df['Age'] = pd.cut(titanic_df['Age'], bins=bins, labels=labels, include_lowest=True)
     titanic_df['Age'] = titanic_df['Age'].astype('int64') #.map( {'male': 0, 'female': 1} )
