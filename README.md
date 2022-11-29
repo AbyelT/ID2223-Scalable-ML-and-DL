@@ -3,8 +3,7 @@ A repository dedicated to the [ID2223](https://www.kth.se/student/kurser/kurs/ID
 
 ## Contents
 
-[Lab1](https://github.com/AbyelT/ID2223-Scalable-ML-and-DL/tree/main/Lab1): Building a Serverless ML system
-Lab2: *comming soon
-Project: *comming soon
+- [Lab1](https://github.com/AbyelT/ID2223-Scalable-ML-and-DL/tree/main/Lab1): Building a Serverless ML system
+- [Lab2](https://github.com/AbyelT/ID2223-Scalable-ML-and-DL/tree/main/Lab2): Fine-Tune a Transformer model for Language Transcription
 
 Contributors: [Abyel Tesfay](https://github.com/AbyelT) and [Moa Hoffström](https://github.com/moahoffstrom)
