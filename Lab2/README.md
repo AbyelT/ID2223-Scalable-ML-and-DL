@@ -30,7 +30,7 @@ The steps taken in the lab follows the guide on how to fine-tune the Whisper mod
 
 # Model 1: Base-case fine-tuned model
 
-In the first iteration, we fine-tuned the small checkpoint of the Whisper pre-trained model with the full Common Voice dataset in the swedish language. This iteration was  computation intensive, requiring two sessions from colab to complete the model training. The following evaluation was achieved:
+In the first iteration, we fine-tuned the small checkpoint of the Whisper pre-trained model with the full Common Voice dataset in the swedish language. This iteration was computation intensive, requiring two sessions from colab to complete the model training. The iteration was one  The following evaluation was achieved:
 
 eval/loss: 0.30
 eval/wer: 19.89
@@ -39,8 +39,12 @@ There were some factors that may have affected the model score. One is that when
 
 ## Improving pipeline scalability and model performance
 
-- Model-centric approach
-- Data-centric approach
+The initial model showed acceptable results with the base case checkpoint and common voice dataset, and could improve by e.g. fine-tuning hyper-parameters or train models with new data sources. The following two ways are currently used to train and improve models:
+
+- Model-centric approach: Collect any available data and develop a model that is good enough to handle any noise. The data is fixed and the focus lies on iteratively improving the model. 
+- Data-centric approach: Focus lines on the quality of the data, thus you try to improve the quality through data preparation methods such thatthe data is reliable and efficient. With good data multiple models should be able to perform well.
+
+For improving the model, we chose the *Data-centric approach*. The reason being that training a model is only a small part of the ML lifecyle, while data collection and preparation is a much larger domain. Improving the quality of the data would not only increase the  accuracy of the trained model but also multiple other models, in contrast to optimizing a single model to perform well on poorly prepared data with noise.
 
 # Model 2: Improved model (WIP)
 
