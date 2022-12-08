@@ -30,7 +30,7 @@ The steps taken in the lab follows the guide on how to fine-tune the Whisper mod
 
 # Model 1: Base-case fine-tuned model
 
-In the first iteration, we fine-tuned the small checkpoint of the Whisper pre-trained model with the full Common Voice dataset in the swedish language. This iteration was computation intensive, requiring two sessions from colab to complete the model training. The iteration was one  The following evaluation was achieved:
+In the first iteration, we fine-tuned the small checkpoint of the Whisper pre-trained model with the full Common Voice dataset in the swedish language. This iteration was computation intensive, requiring two sessions from colab to complete the model training. The iteration was performed on one single monolithic pipeline The following evaluation was achieved:
 
 eval/loss: 0.30
 eval/wer: 19.89
@@ -47,6 +47,16 @@ The initial model showed acceptable results with the base case checkpoint and co
 For improving the model, we chose the *Data-centric approach*. The reason being that training a model is only a small part of the ML lifecyle, while data collection and preparation is a much larger domain. Improving the quality of the data would not only increase the  accuracy of the trained model but also multiple other models, in contrast to optimizing a single model to perform well on poorly prepared data with noise.
 
 # Model 2: Improved model (WIP)
+In this model, we opted to downsample the dataset for faster training. This model is trained on 60% of the training and validation dataset combined, and evaluated on 60% of the test set. At this time the ML pipeline was split into the following pipelines:
 
-## Speech transcription model
-Link: https://huggingface.co/AbyelT/Whisper-models
+* [Feature Engineering pipeline](Lab2/new_model/Feature_engineering_Swedish_fine_tune_whisper.ipynb)
+* [Training pipeline](Lab2/new_model/Training_pipeline_Swedish_fine_tune_whisper.ipynb)
+* [Model inference program](https://huggingface.co/spaces/AbyelT/Swedish-language-transformer)
+
+The following evaluation was achieved:
+
+WIP*
+
+## Models
+[Base case model](https://huggingface.co/AbyelT/Whisper-models)
+[Downsampled new model](https://huggingface.co/AbyelT/Whisper-small-better)
