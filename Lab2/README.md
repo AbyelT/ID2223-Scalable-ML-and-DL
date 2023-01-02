@@ -34,11 +34,11 @@ There were some factors that may have affected the model score. One is that when
 The initial model showed good results, and could be improved by e.g. fine-tuning hyper-parameters or training models with new, better data sources. The following two ways are currently used to train and improve models in the AI/ML community:
 
 - Model-centric approach: Collect any available data and develop a model that is good enough to handle any noise. The data is fixed and the focus lies on iteratively improving the model. 
-- Data-centric approach: Focus lines on the quality of the data, thus you try to improve the quality through data preparation methods such that the data is reliable and efficient. With good data, multiple models should be able to perform well.
+- Data-centric approach: Focus lies on the quality of the data, thus you try to improve the quality through data preparation methods such that the data is reliable and efficient. With good data, multiple models should be able to perform well.
 
 For improving the model, we chose the *Data-centric approach*. The reason being that training a model is only a small part of the ML lifecyle, while data collection and preparation is a much larger domain. Improving the quality of the data would not only increase the accuracy of the trained model but also multiple other models, in contrast to optimizing a single model to perform well on poorly prepared data with noise.
 
-# Model 2: Improved model (WIP)
+# Model 2: Improved model
 In this model, we opted to downsample the dataset for faster training. This model is trained on 20% of the training and validation dataset combined, and evaluated on 20% of the test set. We also included the features 'Accent', 'Gender' and 'upvote_score' as we belive these may have predictive power, and help the model perform better. At this time the ML pipeline was split into the following pipelines:
 
 * [Feature Engineering pipeline](Lab2/new_model/Feature_engineering_Swedish_fine_tune_whisper.ipynb)
@@ -47,10 +47,10 @@ In this model, we opted to downsample the dataset for faster training. This mode
 
 The following evaluation was achieved:
 
-* eval/loss: WIP
-* eval/wer: WIP
+* eval/loss: 
+* eval/wer: 
 
-Due to time constraints we used the 1000-checkpoint out of 2000 steps, the minimal amount of data and the less time for training the model likely affected the evaluation score of this model. We believe the model could have achieved a better score had it been trained on the full dataset, with longer training steps and using the same features as chosen now. 
+Due to time constraints we used the 500-checkpoint out of 2000 steps, the minimal amount of data and the less time for training the model likely affected the evaluation score of this model. We believe the model could have achieved a better score had it been trained on the full dataset, with longer training steps and using the same features as chosen now. 
 
 ## Models
 * [Base case model](https://huggingface.co/AbyelT/Whisper-models)
