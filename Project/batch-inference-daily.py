@@ -1,6 +1,6 @@
 import modal
 
-LOCAL = True
+LOCAL = False
 
 def get_batch_pred():
     import hopsworks
@@ -10,11 +10,13 @@ def get_batch_pred():
     import json
     import dataframe_image as dfi
     from datetime import datetime, timedelta, date
+    from entsoe import EntsoePandasClient
     from urllib.request import urlopen
     from pandas import json_normalize
     import matplotlib.pyplot as plt
     import seaborn as sns
-    from sklearn.metrics import mean_absolute_error
+    from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+    from sklearn.preprocessing import LabelEncoder, StandardScaler
     import os
 
     # Get feature group & model from hopsworks
@@ -30,7 +32,6 @@ def get_batch_pred():
 
     # Predict the price for current day
 
-    # Get 48h data
     last_48h = 48
     X_pred = feature_group.read().tail(last_48h)
     print("Latest 48 hour instances: \n{}".format(X_pred))
@@ -51,120 +52,85 @@ def get_batch_pred():
     for i in range(step_back,no_records):
         X_train_shape_pred.append(x_scaled[i-step_back:i])
     X_train_shape_pred=np.array(X_train_shape_pred)
-    print(X_train_shape_pred.shape)
 
     # predict prices for next 24 h
     pred_price = model.predict(X_train_shape_pred)
     final_pred=sc_y.inverse_transform(pred_price)
-    print(final_pred.shape)
 
     # compare with predictions
+    date_from = datetime.now()
+    date_from = date_from.date().strftime('%Y%m%d')
+    date_to = (datetime.strptime(date_from, '%Y%m%d') + timedelta(days=1)).strftime('%Y%m%d')
+
+    client = EntsoePandasClient(api_key="cb3a29b2-3276-4a4c-aba3-6507120d99be")
+    start = pd.Timestamp(date_from, tz='Europe/Stockholm')
+    end = pd.Timestamp(date_to, tz='Europe/Stockholm')
+    country_code = 'SE_3'  
+
+    df_day_price = client.query_day_ahead_prices(country_code, start=start,end=end)
+    # df_generation = client.query_generation_forecast(country_code, start=start,end=end)
+    # df_load = client.query_load_forecast(country_code, start=start,end=end)
     
-    #transform
+    inference_df = pd.DataFrame({'datetime': df_day_price.index, 'day_ahead_price': df_day_price.values})[:24]
+    inference_df['prediction'] = final_pred
+    inference_df['datetime'] = inference_df['datetime'].astype(str)
 
-    #predict
+    monitor_fg = fs.get_or_create_feature_group(name="new_electricity_prediction_fg",
+                                                    version=1,
+                                                    primary_key=["datetime"],
+                                                    description="SE3 electricity price Prediction/Forecasted price Monitoring")
 
-    #get final pred
+    monitor_fg.insert(inference_df, write_options={"wait_for_job": False})
 
+    history_df = monitor_fg.read()
+    
+    history_df = pd.concat([history_df, inference_df], ignore_index=True)
 
-    # # predict and get latest (daily) feature
-    # y_pred = model.predict(X_pred.drop(columns=['demand', 'date']))
-    # print("Prediction: {}".format(y_pred[0]))
+    # MAE
+    y_pred = history_df['prediction']
+    y_test = history_df['day_ahead_price']
+    mean_error = mean_absolute_error(y_test, y_pred)
+    print("MAE: {}".format(mean_error))  # in MWh
 
-    # prediction_date = X_pred.iloc[0]['date']
-    # prediction_date = prediction_date.date()
-    # print("Prediction date: {}".format(prediction_date))
+    ## Generate figures for daily monitoring
 
+    # generate 24h recent prediction
+    dataset_api = project.get_dataset_api()
+    dfi.export(history_df.tail(24), './df_se3_elec_price_recent.png', table_conversion='matplotlib')
+    dataset_api.upload("./df_se3_elec_price_recent.png", "Resources/images", overwrite=True)
 
+    # generate comparision plot between Entsoe forecast and prediction
+    aa=[x for x in range(len(history_df))]
+    plt.figure(0, figsize=(14,4))
+    plt.plot(aa, history_df['day_ahead_price'], marker='.', label="forecast (Entsoe)")
+    plt.plot(aa, history_df['prediction'], 'r', label="prediction")
+    # plt.tick_params(left=False, labelleft=True) #remove ticks
+    plt.tight_layout()
+    sns.despine(top=True)
+    plt.subplots_adjust(left=0.07)
+    plt.ylabel('Electricity Day Ahead Price [EUR/MWh]', size=15)
+    plt.xlabel('Time step [Hour]', size=30)
+    plt.legend(fontsize=15)
 
+    plt.savefig("./df_se3_elec_price_prediction.png")
+    dataset_api.upload("./df_se3_elec_price_prediction.png", "Resources/images", overwrite=True)
 
-    # # get demand (forecast) from EIA (for comparison)
-    # url = ('https://api.eia.gov/v2/electricity/rto/daily-region-data/data/'
-    #        '?frequency=daily'
-    #        '&data[0]=value'
-    #        '&facets[respondent][]=NY'
-    #        '&facets[timezone][]=Eastern'
-    #        '&facets[type][]=DF'
-    #        '&sort[0][column]=period'
-    #        '&sort[0][direction]=desc'
-    #        '&offset=0'
-    #        '&length=5000')
+    # Generate barplot of error metrics
+    rmse = mean_squared_error(y_test, y_pred, squared=False)
+    mae = mean_absolute_error(y_test, y_pred)
 
-    # url = url + '&start={}&end={}&api_key={}'.format(prediction_date, prediction_date, os.environ.get('EIA_API_KEY'))
-    # data = requests.get(url).json()['response']['data']
-    # forecast = data[0]['value']
-    # print("EIA forecast: {}".format(forecast))
+    metrics = ['RMSE', 'MAE']
+    values = [rmse, mae]
+    colors = ['blue', 'red']
+    plt.figure(1)
+    plt.bar(metrics, values, color=colors)
+    plt.title('Error metrics', fontsize=14)
+    plt.xlabel('Metric type', fontsize=14)
+    plt.ylabel('Value', fontsize=14)
+    plt.grid(True)
 
-    # # create DF for monitoring data
-    # now = datetime.now().strftime("%m/%d/%Y, %H:%M:%S")
-    # data = {
-    #     'prediction': y_pred,
-    #     'actual': [X_pred.iloc[0]['demand']],
-    #     'forecast_eia': [forecast],
-    #     'prediction_date': [prediction_date],
-    #     'datetime': [now],
-    # }
-    # monitor_df = pd.DataFrame(data)
-
-    # # create monitoring FG
-    # monitor_fg = fs.get_or_create_feature_group(name="ny_elec_predictions",
-    #                                             version=1,
-    #                                             primary_key=["datetime"],
-    #                                             description="NY Electricity Prediction/Outcome Monitoring")
-
-    # monitor_fg.insert(monitor_df, write_options={"wait_for_job": False})
-
-    # history_df = monitor_fg.read()
-    # # Add our prediction to the history, as the history_df won't have it -
-    # # the insertion was done asynchronously, so it will take ~1 min to land on App
-    # # TODO: commented for now since we can wait in a notebook, remember to uncomment
-    # #  if running e.g. in a modal job!
-    # history_df = pd.concat([history_df, monitor_df], ignore_index=True)
-
-    # # MAE
-    # y_pred = history_df['prediction']
-    # y_test = history_df['actual']
-    # mean_error = mean_absolute_error(y_test, y_pred)
-    # print("MAE: {}".format(mean_error))  # in MWh
-
-    # # create "recents" table for UI and upload
-    # dataset_api = project.get_dataset_api()
-    # dfi.export(history_df.tail(5), './df_ny_elec_recent.png', table_conversion='matplotlib')
-    # dataset_api.upload("./df_ny_elec_recent.png", "Resources/images", overwrite=True)
-
-    # # create "prediction" chart for UI and upload
-    # data = {'label': ['Predicted demand', 'Actual demand', 'EIA forecast'],
-    #         'value': [monitor_df[l][0] for l in ['prediction', 'actual', 'forecast_eia']]}
-    # pred_df = pd.DataFrame(data)
-    # pred_plot = sns.barplot(data=pred_df, y='value', x='label')
-    # plt.ylabel('Demand [MWh]')
-    # plt.xlabel('')
-    # plt.ylim(pred_df['value'].min() - 10000, pred_df['value'].max() + 5000)
-    # plt.title('Predicted and actual demands for {}'.format(monitor_df['prediction_date'][0]))
-    # fig = pred_plot.get_figure()
-    # fig.savefig("./df_ny_elec_prediction.png")
-    # dataset_api.upload("./df_ny_elec_prediction.png", "Resources/images", overwrite=True)
-
-    # # create MAE trend graph for UI and upload
-    # latest_history_df = history_df.loc[-5:]  # TODO: might want/need to change this somewhen
-    # no_entries = len(latest_history_df)
-    # mae = []
-    # for i in range(no_entries):
-    #     df = latest_history_df.loc[:i]
-    #     mae.append([mean_absolute_error(df['actual'], df['prediction']),
-    #                 mean_absolute_error(df['actual'], df['forecast_eia']),
-    #                 pd.to_datetime(df['datetime'][i]).date()])
-    # mae_df = pd.DataFrame(mae, columns=['Prediction', 'EIA forecast', 'Date'])
-    # mae_plot = sns.lineplot(data=mae_df.melt(id_vars=['Date'],
-    #                                          value_vars=['Prediction', 'EIA forecast']),
-    #                         x='Date', y='value', hue='variable')
-    # plt.ylabel('Demand [MWh]')
-    # plt.title('Mean absolute error (MAE) for last {} predictions'.format(no_entries))
-    # mae_plot.legend().set_title('MAE')
-    # fig = mae_plot.get_figure()
-    # fig.savefig("./df_ny_elec_mae.png")
-    # dataset_api.upload("./df_ny_elec_mae.png", "Resources/images", overwrite=True)
-
+    plt.savefig("./df_se3_error_metrics.png")
+    dataset_api.upload("./df_se3_error_metrics.png", "Resources/images", overwrite=True)
 
 if LOCAL == False:
     stub = modal.Stub() #apt_install(["libgomp1"])
@@ -172,8 +138,7 @@ if LOCAL == False:
         "hopsworks==3.0.4", "seaborn", "joblib", "scikit-learn==1.0.2", "entsoe-py",
         "dataframe-image", "matplotlib", "numpy", "pandas", "datetime", "tensorflow", "keras"])
 
-    @stub.function(image=image, schedule=modal.Period(days=1), secret=modal.Secret.from_name("HOPSWORKS_API_KEY"))
-    # @stub.function(image=image, secret=modal.Secret.from_name("HOPSWORKS_API_KEY"))
+    @stub.function(image=image, schedule=modal.Period(days=1), secret=modal.Secret.from_name("abyel-hopsworks-secret"))
     def modal_batch_pred():
         get_batch_pred()
 
