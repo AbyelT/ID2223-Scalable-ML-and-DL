@@ -1,0 +1,7 @@
+hopsworks
+joblib
+tensorflow
+pandas
+keras
+entsoe
+scikit-learn==1.0.2
