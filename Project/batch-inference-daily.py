@@ -104,7 +104,6 @@ def get_batch_pred():
     plt.figure(0, figsize=(14,4))
     plt.plot(aa, history_df['day_ahead_price'], marker='.', label="forecast (Entsoe)")
     plt.plot(aa, history_df['prediction'], 'r', label="prediction")
-    # plt.tick_params(left=False, labelleft=True) #remove ticks
     plt.tight_layout()
     sns.despine(top=True)
     plt.subplots_adjust(left=0.07)
@@ -133,7 +132,7 @@ def get_batch_pred():
     dataset_api.upload("./df_se3_error_metrics.png", "Resources/images", overwrite=True)
 
 if LOCAL == False:
-    stub = modal.Stub() #apt_install(["libgomp1"])
+    stub = modal.Stub()
     image = modal.Image.debian_slim().pip_install([
         "hopsworks==3.0.4", "seaborn", "joblib", "scikit-learn==1.0.2", "entsoe-py",
         "dataframe-image", "matplotlib", "numpy", "pandas", "datetime", "tensorflow", "keras"])
@@ -147,5 +146,3 @@ if __name__ == "__main__":
         get_batch_pred()
     else:
         stub.deploy("modal_batch_pred")
-        # with stub.run():
-        #    modal_batch_elec()
