@@ -77,7 +77,7 @@ The inference pipeline runs on a daily basis where the initial step is to retrie
 The predictions and the Entsoe forecast is combined and uploaded to a new feature group for monitoring predictions. To asses the accuracy of our predicitions the two are plotted for comparision. Additionally the Mean Absolute Error and the Root Mean Squared Error between the two is also computed. displayed in the UI. All plots are displayed in the Monitoring UI.
 
 ## UI Links
-* Prediction service: https://huggingface.co/spaces/AbyelT/Electricty_Price_Monitoring
-* Monitoring UI: https://huggingface.co/spaces/AbyelT/Electricity_Price
+* Prediction service: https://huggingface.co/spaces/AbyelT/Electricity_Price
+* Monitoring UI: https://huggingface.co/spaces/AbyelT/Electricty_Price_Monitoring
 * Note: The UI shows three input boxes for unknown reasons, click on "generate" to get the daily forecast
   
