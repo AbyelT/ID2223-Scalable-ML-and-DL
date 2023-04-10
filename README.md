@@ -7,4 +7,6 @@ A repository dedicated to the [ID2223](https://www.kth.se/student/kurser/kurs/ID
 - [Lab2](https://github.com/AbyelT/ID2223-Scalable-ML-and-DL/tree/main/Lab2): Fine-Tune a Transformer model for Language Transcription
 - [Project](https://github.com/AbyelT/ID2223-Scalable-ML-and-DL/tree/main/Project): Swedish electricity price prediction
 
-Contributors: [Abyel Tesfay](https://github.com/AbyelT) and [Moa Hoffström](https://github.com/moahoffstrom)
+## Contributors
+- [Moa Hoffström](https://github.com/moahoffstrom) 
+- [Abyel Tesfay](https://github.com/AbyelT)  
